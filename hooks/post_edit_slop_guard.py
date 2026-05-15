@@ -25,6 +25,16 @@ HOOKS_DIR = Path(__file__).resolve().parent
 SEMGREP_RULES = HOOKS_DIR / "semgrep_slop_rules.yml"
 SHELL_SUFFIXES = {".sh", ".bash", ".zsh"}
 SEMGREP_SUFFIXES = {".py", ".js", ".jsx", ".ts", ".tsx"}
+AST_GREP_PATTERNS = {
+    ".py": [
+        ("python-not-implemented", "python", "raise NotImplementedError", "NotImplementedError stub left in code."),
+        ("python-not-implemented-call", "python", "raise NotImplementedError($$$)", "NotImplementedError stub left in code."),
+    ],
+    ".js": [("ts-not-implemented", "ts", 'throw new Error("Not implemented");', "Not implemented stub left in code.")],
+    ".jsx": [("ts-not-implemented", "tsx", 'throw new Error("Not implemented");', "Not implemented stub left in code.")],
+    ".ts": [("ts-not-implemented", "ts", 'throw new Error("Not implemented");', "Not implemented stub left in code.")],
+    ".tsx": [("ts-not-implemented", "tsx", 'throw new Error("Not implemented");', "Not implemented stub left in code.")],
+}
 PLACEHOLDER_SECRET_RE = re.compile(r"(your-secret-key-here|changeme|replace-me|dummy-secret|placeholder)", re.IGNORECASE)
 DEBUG_ARTIFACT_RE = re.compile(r"\b(print|console\.log)\s*\([^)]*(debug|todo|trace)", re.IGNORECASE)
 NOOP_TIMING_RE = re.compile(r"\b(time\.sleep\(0\)|setTimeout\([^,]+,\s*0\))")
@@ -146,6 +156,8 @@ def line_slop_warning(file_path: Path, root: Path, line_number: int, line: str) 
     target = relative_path(file_path, root)
     if "re.compile" in line:
         return None
+    if file_path.name == "post_edit_slop_guard.py" and ("PLACEHOLDER" in line or "warn placeholder" in line):
+        return None
     secret_match = PLACEHOLDER_SECRET_RE.search(line)
     if secret_match:
         return f"{target}:L{line_number}: warn placeholder `{secret_match.group(0)}`; remove or read config."
@@ -250,6 +262,43 @@ def semgrep_findings(file_path: Path, root: Path) -> list[str]:
     return lines
 
 
+def ast_grep_findings(file_path: Path, root: Path) -> list[str]:
+    specs = AST_GREP_PATTERNS.get(file_path.suffix)
+    if not specs:
+        return []
+    missing = required_tool_missing_message("ast-grep")
+    if missing:
+        return [missing]
+    lines: list[str] = []
+    target = relative_path(file_path, root)
+    for _, lang, pattern, message in specs:
+        if len(lines) >= MAX_FINDINGS:
+            break
+        result = run_command(
+            ["ast-grep", "run", "--lang", lang, "--pattern", pattern, "--json=compact", str(file_path)],
+            root,
+        )
+        if result is None:
+            continue
+        try:
+            matches = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(matches, list):
+            continue
+        for match in matches:
+            if len(lines) >= MAX_FINDINGS:
+                break
+            if not isinstance(match, dict):
+                continue
+            match_range = match.get("range")
+            start = match_range.get("start") if isinstance(match_range, dict) else None
+            line = start.get("line") if isinstance(start, dict) else None
+            if isinstance(line, int):
+                lines.append(f"{target}:L{line + 1}: ast-grep {message}")
+    return lines
+
+
 def collect_findings(file_path: Path, root: Path) -> list[str]:
     findings: list[str] = []
     if file_path.suffix in SHELL_SUFFIXES:
@@ -258,6 +307,8 @@ def collect_findings(file_path: Path, root: Path) -> list[str]:
             findings.extend(shellcheck_findings(file_path, root))
         return findings[:MAX_FINDINGS]
     findings.extend(semgrep_findings(file_path, root))
+    if len(findings) < MAX_FINDINGS:
+        findings.extend(ast_grep_findings(file_path, root))
     return findings[:MAX_FINDINGS]
 
 

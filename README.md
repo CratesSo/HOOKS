@@ -22,6 +22,7 @@ brew install semgrep ast-grep shellcheck shfmt
 ```
 
 If you keep those binaries outside your normal `PATH`, set `HOOKY_SLOP_TOOL_BIN` to the directory that contains them.
+The installer renders hook commands with the `python3` found on your `PATH`.
 
 Clone the repo and run the installer:
 

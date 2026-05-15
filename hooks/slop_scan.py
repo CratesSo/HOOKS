@@ -307,7 +307,7 @@ def main() -> int:
         print()
 
     print("Coverage: Semgrep uses the local hooky rules for Python and JS/TS only.")
-    print("Coverage: Rust and shell checks come from ast-grep, shellcheck, and shfmt through the hook script.")
+    print("Coverage: ast-grep checks stubs in Python and JS/TS; shellcheck and shfmt check shell scripts.")
     print("Note: slop-scan checks advisory warnings across clean tracked files too.")
     return 1 if blockers or errors else 0
 

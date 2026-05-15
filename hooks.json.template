@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 __HOOKS_DIR__/hooks/bash_pre_guard.py",
+            "command": "__PYTHON3__ __HOOKS_DIR__/hooks/bash_pre_guard.py",
             "statusMessage": "Checking Bash command"
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 __HOOKS_DIR__/hooks/bash_post_guard.py",
+            "command": "__PYTHON3__ __HOOKS_DIR__/hooks/bash_post_guard.py",
             "statusMessage": "Reviewing Bash output"
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 __HOOKS_DIR__/hooks/post_edit_slop_guard.py",
+            "command": "__PYTHON3__ __HOOKS_DIR__/hooks/post_edit_slop_guard.py",
             "statusMessage": "Checking edited file"
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 __HOOKS_DIR__/hooks/stop_slop_guard.py",
+            "command": "__PYTHON3__ __HOOKS_DIR__/hooks/stop_slop_guard.py",
             "statusMessage": "Checking touched files"
           }
         ]
