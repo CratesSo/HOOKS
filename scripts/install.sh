@@ -36,13 +36,14 @@ fi
 python3 - "$template" "$target" "$hooks_dir" "$python3_path" <<'PY'
 from pathlib import Path
 import json
+import shlex
 import sys
 
 template = Path(sys.argv[1])
 target = Path(sys.argv[2])
 hooks_dir = sys.argv[3]
 python3_path = sys.argv[4]
-text = template.read_text().replace("__HOOKS_DIR__", hooks_dir).replace("__PYTHON3__", python3_path)
+text = template.read_text().replace("__HOOKS_DIR__", shlex.quote(hooks_dir)).replace("__PYTHON3__", shlex.quote(python3_path))
 json.loads(text)
 target.write_text(text)
 PY

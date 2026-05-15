@@ -263,8 +263,7 @@ def main() -> int:
         file=sys.stderr,
         flush=True,
     )
-    with tempfile.TemporaryDirectory(prefix="slop-scan-") as tmp:
-        env["HOOK_METRICS_DB_PATH"] = str(Path(tmp) / "hook_metrics.db")
+    with tempfile.TemporaryDirectory(prefix="slop-scan-"):
         for index, path in enumerate(files, start=1):
             result = scan_file(path, root, env)
             if result.returncode == 2:
