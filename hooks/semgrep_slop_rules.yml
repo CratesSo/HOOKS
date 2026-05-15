@@ -1,0 +1,128 @@
+rules:
+  - id: python-swallowed-exception-pass
+    languages: [python]
+    severity: ERROR
+    message: Swallowed broad exception with pass.
+    pattern-either:
+      - pattern: |
+          try:
+            ...
+          except Exception:
+            pass
+      - pattern: |
+          try:
+            ...
+          except Exception as $ERR:
+            pass
+  - id: python-swallowed-exception-return-none
+    languages: [python]
+    severity: ERROR
+    message: Swallowed broad exception by returning None.
+    pattern-either:
+      - pattern: |
+          try:
+            ...
+          except Exception:
+            return None
+      - pattern: |
+          try:
+            ...
+          except Exception as $ERR:
+            return None
+  - id: python-obscured-exception-return-default
+    languages: [python]
+    severity: ERROR
+    message: Obscured exception by returning a default value.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              try:
+                ...
+              except Exception:
+                return $VALUE
+          - pattern: |
+              try:
+                ...
+              except Exception as $ERR:
+                return $VALUE
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: \A(\{\}|\[\]|""|''|0|1)\Z
+  - id: python-obscured-exception-generic-error
+    languages: [python]
+    severity: ERROR
+    message: Obscured exception by replacing it with a generic error.
+    pattern-either:
+      - pattern: |
+          try:
+            ...
+          except Exception:
+            raise Exception(...)
+      - pattern: |
+          try:
+            ...
+          except Exception as $ERR:
+            raise Exception(...)
+      - pattern: |
+          try:
+            ...
+          except Exception:
+            raise RuntimeError(...)
+      - pattern: |
+          try:
+            ...
+          except Exception as $ERR:
+            raise RuntimeError(...)
+  - id: javascript-empty-catch
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Empty catch block left in code.
+    pattern-either:
+      - pattern: |
+          try {
+            ...
+          } catch ($ERR) {
+          }
+      - pattern: |
+          try {
+            ...
+          } catch {
+          }
+  - id: javascript-obscured-catch-return-default
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Obscured exception by returning a default value.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              try {
+                ...
+              } catch ($ERR) {
+                return $VALUE;
+              }
+          - pattern: |
+              try {
+                ...
+              } catch {
+                return $VALUE;
+              }
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: \A(\{\}|\[\]|""|''|null|undefined)\Z
+  - id: javascript-obscured-catch-generic-error
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Obscured exception by replacing it with a generic error.
+    pattern-either:
+      - pattern: |
+          try {
+            ...
+          } catch ($ERR) {
+            throw new Error(...);
+          }
+      - pattern: |
+          try {
+            ...
+          } catch {
+            throw new Error(...);
+          }

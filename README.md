@@ -7,10 +7,11 @@ This repo publishes a small, public-safe Codex hooks setup. It installs local gu
 ## What is included
 
 - `hooks.json.template`: Codex hook config rendered by the installer.
-- `hooks/`: Python guard scripts used by the template.
+- `hooks/`: Python guard scripts, slop scan rules, and shared scanner helpers.
 - `scripts/install.sh`: installer that renders the template into `~/.codex/hooks.json`.
 
 The published config intentionally excludes private machine state, Codex trusted hook hashes, MCP configuration, logs, sessions, caches, and `context-mode` hooks.
+It also excludes Hooky's private metrics database plumbing.
 
 ## Install
 
