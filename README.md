@@ -15,6 +15,14 @@ It also excludes Hooky's private metrics database plumbing.
 
 ## Install
 
+Install the analyzer tools used by the edit and scan hooks:
+
+```sh
+brew install semgrep ast-grep shellcheck shfmt
+```
+
+If you keep those binaries outside your normal `PATH`, set `HOOKY_SLOP_TOOL_BIN` to the directory that contains them.
+
 Clone the repo and run the installer:
 
 ```sh

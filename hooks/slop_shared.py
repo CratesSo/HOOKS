@@ -5,12 +5,12 @@ import shutil
 import subprocess
 from pathlib import Path
 
-HOOKY_ROOT = Path(__file__).resolve().parent.parent
+HOOKS_ROOT = Path(__file__).resolve().parent.parent
 MAX_FILE_BYTES = 200_000
 TOOL_BIN_DIR = Path(
     os.environ.get(
         "HOOKY_SLOP_TOOL_BIN",
-        str(HOOKY_ROOT / ".tools" / "bin"),
+        str(HOOKS_ROOT / ".tools" / "bin"),
     )
 )
 REQUIRED_ANALYZERS = {"ast-grep", "semgrep", "shellcheck", "shfmt"}
@@ -43,19 +43,15 @@ def build_search_path(root: Path) -> str:
 
 
 def which(name: str, root: Path) -> str | None:
-    if name in REQUIRED_ANALYZERS:
-        path = TOOL_BIN_DIR / name
-        return str(path) if path.is_file() and os.access(path, os.X_OK) else None
     return shutil.which(name, path=build_search_path(root))
 
 
 def required_tool_missing_message(name: str) -> str | None:
     if name not in REQUIRED_ANALYZERS:
         return None
-    path = TOOL_BIN_DIR / name
-    if path.is_file() and os.access(path, os.X_OK):
+    if which(name, Path.cwd()) is not None:
         return None
-    return f"required analyzer missing: {name} at {path}"
+    return f"required analyzer missing: {name}; install it on PATH or set HOOKY_SLOP_TOOL_BIN"
 
 
 def relative_path(path: Path, root: Path) -> str:
